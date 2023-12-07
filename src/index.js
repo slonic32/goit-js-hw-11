@@ -27,7 +27,7 @@ async function startSearch(event) {
   searchQuery = searchForm.elements.searchQuery.value;
   Notiflix.Loading.circle('Searching...');
   try {
-    images = await axios.get('', {
+    const images = await axios.get('', {
       params: {
         key: '41109896-77818a6e9b7c144f2b3908a2d',
         image_type: 'photo',
@@ -100,7 +100,7 @@ async function showMore(event) {
     Notiflix.Loading.circle('Searching...');
 
     try {
-      images = await axios.get('', {
+      const images = await axios.get('', {
         params: {
           key: '41109896-77818a6e9b7c144f2b3908a2d',
           image_type: 'photo',
