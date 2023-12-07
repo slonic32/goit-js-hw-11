@@ -1,8 +1,7 @@
 import Notiflix from 'notiflix';
-import axios from 'axios';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { throttle } from 'lodash';
+import { getImages } from './service-api';
 
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 const searchForm = document.querySelector('#search-form');
@@ -12,6 +11,7 @@ let currentPage = 1;
 let maxPage = 1;
 let searchQuery = '';
 let firstSearch = true;
+console.log('Hello!!');
 
 moreButton.style.display = 'none';
 
@@ -24,44 +24,38 @@ async function startSearch(event) {
   event.preventDefault();
   moreButton.style.display = 'none';
   gallery.innerHTML = '';
+  galleryLightbox.refresh();
   searchQuery = searchForm.elements.searchQuery.value;
+  currentPage = 1;
   Notiflix.Loading.circle('Searching...');
   try {
-    const images = await axios.get('', {
-      params: {
-        key: '41109896-77818a6e9b7c144f2b3908a2d',
-        image_type: 'photo',
-        orientation: 'horizontal',
-        safesearch: 'true',
-        per_page: '40',
-        q: searchQuery,
-      },
-    });
+    const images = await getImages(searchQuery, currentPage);
   } catch (error) {
     Notiflix.Loading.remove();
-    Notiflix.Notify.failure(error);
+    Notiflix.Notify.failure(error.message);
   }
   Notiflix.Loading.remove();
-  currentPage = 1;
-  maxPage = Math.ceil(images.data.totalHits / 40);
-  drawGallery(images.data.hits);
-  moreButton.style.display = '';
-  if (!firstSearch) {
-    Notiflix.Notify.info(`Hooray! We found ${images.data.totalHits} images.`);
-  }
-
-  firstSearch = false;
-}
-
-function drawGallery(images) {
   if (images.length === 0) {
+    console.log('mo button');
     Notiflix.Notify.warning(
       'Sorry, there are no images matching your search query. Please try again.'
     );
   } else {
-    const imagegallery = [];
-    images.forEach(image => {
-      imagegallery.push(`
+    maxPage = Math.ceil(images.totalHits / 40);
+    drawGallery(images.hits);
+    console.log('button');
+    moreButton.style.display = '';
+  }
+  if (!firstSearch) {
+    Notiflix.Notify.info(`Hooray! We found ${images.totalHits} images.`);
+  }
+  firstSearch = false;
+}
+
+function drawGallery(images) {
+  const imagegallery = [];
+  images.forEach(image => {
+    imagegallery.push(`
       <div class="photo-card">
       <a href="${image.largeImageURL}">
   <img src="${image.webformatURL}" alt="${image.tags}" url="${image.largeImageURL}" loading="lazy" width="240px" />
@@ -82,10 +76,9 @@ function drawGallery(images) {
   </a>
 </div>
 `);
-    });
-    gallery.insertAdjacentHTML('beforeend', imagegallery.join(''));
-    galleryLightbox.refresh();
-  }
+  });
+  gallery.insertAdjacentHTML('beforeend', imagegallery.join(''));
+  galleryLightbox.refresh();
 }
 
 async function showMore(event) {
@@ -98,24 +91,13 @@ async function showMore(event) {
     );
   } else {
     Notiflix.Loading.circle('Searching...');
-
     try {
-      const images = await axios.get('', {
-        params: {
-          key: '41109896-77818a6e9b7c144f2b3908a2d',
-          image_type: 'photo',
-          orientation: 'horizontal',
-          safesearch: 'true',
-          per_page: '40',
-          page: currentPage,
-          q: searchQuery,
-        },
-      });
+      const images = await getImages(searchQuery, currentPage);
     } catch (error) {
       Notiflix.Loading.remove();
-      Notiflix.Notify.failure(error);
+      Notiflix.Notify.failure(error.message);
     }
     Notiflix.Loading.remove();
-    drawGallery(images.data.hits);
+    drawGallery(images.hits);
   }
 }

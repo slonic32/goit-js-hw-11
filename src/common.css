@@ -74,6 +74,7 @@ b {
 .load-more {
   margin: auto;
   float: right;
+  display: none;
 }
 
 .gallery {
