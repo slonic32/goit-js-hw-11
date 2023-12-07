@@ -30,8 +30,16 @@ async function startSearch(event) {
     const images = await getImages(searchQuery, currentPage);
     Notiflix.Loading.remove();
     maxPage = Math.ceil(images.totalHits / 40);
-    drawGallery(images.hits);
-    moreButton.style.display = '';
+    if (images.totalHits === 0) {
+      Notiflix.Notify.warning(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    } else {
+      drawGallery(images.hits);
+      if (currentPage < maxPage) {
+        moreButton.style.display = '';
+      }
+    }
     if (!firstSearch) {
       Notiflix.Notify.info(`Hooray! We found ${images.totalHits} images.`);
     }
@@ -43,14 +51,9 @@ async function startSearch(event) {
 }
 
 function drawGallery(images) {
-  if (images.length === 0) {
-    Notiflix.Notify.warning(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
-  } else {
-    const imagegallery = [];
-    images.forEach(image => {
-      imagegallery.push(`
+  const imagegallery = [];
+  images.forEach(image => {
+    imagegallery.push(`
       <div class="photo-card">
       <a href="${image.largeImageURL}">
   <img src="${image.webformatURL}" alt="${image.tags}" url="${image.largeImageURL}" loading="lazy" width="240px" />
@@ -71,16 +74,15 @@ function drawGallery(images) {
   </a>
 </div>
 `);
-    });
-    gallery.insertAdjacentHTML('beforeend', imagegallery.join(''));
-    galleryLightbox.refresh();
-  }
+  });
+  gallery.insertAdjacentHTML('beforeend', imagegallery.join(''));
+  galleryLightbox.refresh();
 }
 
 async function showMore(event) {
   event.preventDefault();
   currentPage++;
-  if (currentPage >= maxPage) {
+  if (currentPage > maxPage) {
     moreButton.style.display = 'none';
     Notiflix.Notify.warning(
       "We're sorry, but you've reached the end of search results."
