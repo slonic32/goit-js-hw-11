@@ -17,6 +17,7 @@ async function getImages(searchQuery, currentPage) {
     });
     return result.data;
   } catch (error) {
+    console.log('error: ', error);
     throw error;
   }
 }

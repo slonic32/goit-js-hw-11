@@ -10,9 +10,6 @@ let currentPage = 1;
 let maxPage = 1;
 let searchQuery = '';
 let firstSearch = true;
-delete console.log;
-console.error('error');
-console.log('Hello!!');
 
 moreButton.style.display = 'none';
 
@@ -31,32 +28,29 @@ async function startSearch(event) {
   Notiflix.Loading.circle('Searching...');
   try {
     const images = await getImages(searchQuery, currentPage);
+    Notiflix.Loading.remove();
+    maxPage = Math.ceil(images.totalHits / 40);
+    drawGallery(images.hits);
+    moreButton.style.display = '';
+    if (!firstSearch) {
+      Notiflix.Notify.info(`Hooray! We found ${images.totalHits} images.`);
+    }
   } catch (error) {
     Notiflix.Loading.remove();
     Notiflix.Notify.failure(error.message);
-  }
-  Notiflix.Loading.remove();
-  if (images.length === 0) {
-    console.log('mo button');
-    Notiflix.Notify.warning(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
-  } else {
-    maxPage = Math.ceil(images.totalHits / 40);
-    drawGallery(images.hits);
-    console.log('button');
-    moreButton.style.display = '';
-  }
-  if (!firstSearch) {
-    Notiflix.Notify.info(`Hooray! We found ${images.totalHits} images.`);
   }
   firstSearch = false;
 }
 
 function drawGallery(images) {
-  const imagegallery = [];
-  images.forEach(image => {
-    imagegallery.push(`
+  if (images.length === 0) {
+    Notiflix.Notify.warning(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+  } else {
+    const imagegallery = [];
+    images.forEach(image => {
+      imagegallery.push(`
       <div class="photo-card">
       <a href="${image.largeImageURL}">
   <img src="${image.webformatURL}" alt="${image.tags}" url="${image.largeImageURL}" loading="lazy" width="240px" />
@@ -77,15 +71,16 @@ function drawGallery(images) {
   </a>
 </div>
 `);
-  });
-  gallery.insertAdjacentHTML('beforeend', imagegallery.join(''));
-  galleryLightbox.refresh();
+    });
+    gallery.insertAdjacentHTML('beforeend', imagegallery.join(''));
+    galleryLightbox.refresh();
+  }
 }
 
 async function showMore(event) {
   event.preventDefault();
   currentPage++;
-  if (currentPage > maxPage) {
+  if (currentPage >= maxPage) {
     moreButton.style.display = 'none';
     Notiflix.Notify.warning(
       "We're sorry, but you've reached the end of search results."
@@ -94,11 +89,11 @@ async function showMore(event) {
     Notiflix.Loading.circle('Searching...');
     try {
       const images = await getImages(searchQuery, currentPage);
+      Notiflix.Loading.remove();
+      drawGallery(images.hits);
     } catch (error) {
       Notiflix.Loading.remove();
       Notiflix.Notify.failure(error.message);
     }
-    Notiflix.Loading.remove();
-    drawGallery(images.hits);
   }
 }
