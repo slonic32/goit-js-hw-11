@@ -3,7 +3,6 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { getImages } from './service-api';
 
-axios.defaults.baseURL = 'https://pixabay.com/api/';
 const searchForm = document.querySelector('#search-form');
 const gallery = document.querySelector('div.gallery');
 const moreButton = document.querySelector('button.load-more');
@@ -11,6 +10,8 @@ let currentPage = 1;
 let maxPage = 1;
 let searchQuery = '';
 let firstSearch = true;
+delete console.log;
+console.error('error');
 console.log('Hello!!');
 
 moreButton.style.display = 'none';
